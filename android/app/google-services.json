@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "697726514246",
+    "project_id": "mamashopping-6c6fd",
+    "storage_bucket": "mamashopping-6c6fd.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:697726514246:android:41916c0c4cc7f3cfe70647",
+        "android_client_info": {
+          "package_name": "com.flutterthailand.mamaosp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "697726514246-bjvf1r9ebgilrilv8mojudigms9a2ju1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD85ZG0vYfjjZtri-QUNDJ_VaCvtE6Bngo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "697726514246-bjvf1r9ebgilrilv8mojudigms9a2ju1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:697726514246:android:0de96d82227fb780e70647",
+        "android_client_info": {
+          "package_name": "com.yudeedeee.mamashopping"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "697726514246-bjvf1r9ebgilrilv8mojudigms9a2ju1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD85ZG0vYfjjZtri-QUNDJ_VaCvtE6Bngo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "697726514246-bjvf1r9ebgilrilv8mojudigms9a2ju1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
