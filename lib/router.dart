@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mamaosp/states/add_product.dart';
 import 'package:mamaosp/states/authen.dart';
 import 'package:mamaosp/states/my_service_user.dart';
 import 'package:mamaosp/states/my_servics_shoper.dart';
@@ -10,4 +11,5 @@ final Map<String, WidgetBuilder> myRoutes = {
   '/register':(BuildContext context)=>Register(),
   '/myServiceUser':(BuildContext context)=> MyServiceUser(),
   '/myServiceShoper':(BuildContext context)=> MyServiceShoper(),
+  '/addProduct':(BuildContext context)=>AddProduct(),
 };
