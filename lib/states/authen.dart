@@ -1,5 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mamaosp/utility/dialog.dart';
 import 'package:mamaosp/utility/my_style.dart';
 
 class Authen extends StatefulWidget {
@@ -10,6 +14,7 @@ class Authen extends StatefulWidget {
 class _AuthenState extends State<Authen> {
   double screen; //ประกาศตัวแปรที่ใช้เฉพาะClassนี้
   bool status = true;
+  String user, password;
   @override
   Widget build(BuildContext context) {
     //Methodหลักที่เรียกตัวนี้เป็นตัวแรก
@@ -28,16 +33,20 @@ class _AuthenState extends State<Authen> {
             colors: <Color>[Colors.white, MyStyle().primaryColor],
           ),
         ),
-        child: Center(//จัดให้อยู่กึ่งกลางของหน้าจอ
-          child: Column(//แสดงผลจากบนลงล่าง
-            mainAxisSize: MainAxisSize.min, //กำหนดให้ขนาดพอดีกับlogo
-            children: [
-              bulidLogo(),
-              buildText(),
-              buildUser(),
-              buildPassword(),
-              buildLogin(),
-            ],
+        child: Center(
+          //จัดให้อยู่กึ่งกลางของหน้าจอ
+          child: SingleChildScrollView(
+            child: Column(
+              //แสดงผลจากบนลงล่าง
+              mainAxisSize: MainAxisSize.min, //กำหนดให้ขนาดพอดีกับlogo
+              children: [
+                bulidLogo(),
+                buildText(),
+                buildUser(),
+                buildPassword(),
+                buildLogin(),
+              ],
+            ),
           ),
         ),
       ),
@@ -45,9 +54,10 @@ class _AuthenState extends State<Authen> {
   }
 
   TextButton buildRegister() {
-    return TextButton( //เมื่อคำว่า New Register
+    return TextButton(
+      //เมื่อคำว่า New Register
       //Route แบบ pushName คือ ปูทับหน้าเดิมยังอยู่
-      onPressed: () =>Navigator.pushNamed(context, '/register'),
+      onPressed: () => Navigator.pushNamed(context, '/register'),
       child: Text(
         'New Register',
         style: MyStyle().pinkStyle(),
@@ -62,7 +72,14 @@ class _AuthenState extends State<Authen> {
       child: RaisedButton(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         color: MyStyle().darkColor,
-        onPressed: () {},
+        onPressed: () {
+          print('user = $user , password =$password');
+          if ((user?.isEmpty ?? true) || (password?.isEmpty ?? true)) {
+            normalDialog(context, 'Have Space ? Please Fill Every Blank');
+          } else {
+            checkAuthen();
+          }
+        },
         child: Text(
           'Login',
           style: MyStyle().whiteStyle(),
@@ -78,6 +95,11 @@ class _AuthenState extends State<Authen> {
       margin: EdgeInsets.only(top: 16),
       width: screen * 0.6,
       child: TextField(
+        onChanged: (value) {
+          print('value = $value');
+          user = value.trim();
+          print('user = $user');
+        },
         decoration: InputDecoration(
           hintStyle: TextStyle(color: MyStyle().darkColor),
           prefixIcon: Icon(
@@ -103,6 +125,7 @@ class _AuthenState extends State<Authen> {
       margin: EdgeInsets.only(top: 16),
       width: screen * 0.6,
       child: TextField(
+        onChanged: (value) => password = value.trim(),
         obscureText: status,
         decoration: InputDecoration(
           suffixIcon: IconButton(
@@ -151,5 +174,34 @@ class _AuthenState extends State<Authen> {
       width: screen * 0.40, //โชว์โลโก้ตามขนาดหน้าจอ
       child: Image.asset('images/logo.png'),
     );
+  }
+
+  //async ใส่รหว่าง()กับ{}
+  Future<Null> checkAuthen() async {
+    await Firebase.initializeApp().then((value) async {
+      await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: user, password: password)
+          .then(
+        (value) async {
+          String uid = value.user.uid;
+
+          print('uid = $uid');
+          //snapshots=อ่านจากฐานข้อมูล
+          await FirebaseFirestore.instance
+              .collection('typeuser')
+              .doc(uid)
+              .snapshots()
+              .listen((event) {
+            String typeUser = event.data()['typeuser'];
+            print('##################   typeUser = $typeUser');
+
+            Navigator.pushNamedAndRemoveUntil(
+                context, '/myService$typeUser', (route) => false);
+          });
+        },
+      ).catchError((value) {
+        normalDialog(context, value.message);
+      });
+    });
   }
 }

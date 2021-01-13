@@ -283,6 +283,14 @@ class _RegisterState extends State<Register> {
         //addDisplaynametoAuthen
         await value.user.updateProfile(displayName: name);
 
+        //แบบไม่ใช้โมเดล
+        Map<String, dynamic> map = Map();
+        map['typeuser'] = typeUser;
+        await FirebaseFirestore.instance
+            .collection('typeuser')
+            .doc(uid)
+            .set(map);
+
         //เอาโมเดลมาใช้
         UserModel model = UserModel(
             email: user,
@@ -294,7 +302,7 @@ class _RegisterState extends State<Register> {
 
         await FirebaseFirestore.instance
             .collection('user')
-            .doc('typeUser')
+            .doc(typeUser)
             .collection('information')
             .doc(uid)
             .set(data)
