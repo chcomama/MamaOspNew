@@ -1,8 +1,13 @@
 import 'dart:io';
+import 'dart:math';
 
+import 'package:dio/dio.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mamaosp/utility/dialog.dart';
+import 'package:mamaosp/utility/my_constant.dart';
 import 'package:mamaosp/utility/my_style.dart';
 
 class AddProduct extends StatefulWidget {
@@ -13,8 +18,22 @@ class AddProduct extends StatefulWidget {
 class _AddProductState extends State<AddProduct> {
   double screen;
   File file;
-  String name, descrip, price;
+  String name, descrip, price, urtPath, uid;
   bool statusProgress = false;
+
+  @override
+  void initState() {
+    super.initState();
+    findUid();
+  }
+
+  Future<Null> findUid() async {
+    await Firebase.initializeApp().then((value) async {
+      await FirebaseAuth.instance.authStateChanges().listen((event) {
+        uid = event.uid;
+      });
+    });
+  }
 
   Container buildName() {
     return Container(
@@ -185,7 +204,7 @@ class _AddProductState extends State<AddProduct> {
                 onPressed: () {
                   //methodsave
                   uploadImageAndInsertData();
-                  //refrehก่อน 
+                  //refrehก่อน
                   setState(() {
                     statusProgress = true;
                   });
@@ -240,5 +259,32 @@ class _AddProductState extends State<AddProduct> {
     );
   }
 
-  void uploadImageAndInsertData() {}
+//Uploadfile
+  Future<Null> uploadImageAndInsertData() async {
+    //สุ่มId Product
+    int i = Random().nextInt(1000000);
+    String nameImage = 'Product$i.jpg';
+
+    try {
+      Map<String, dynamic> map = Map();
+      map['file'] =
+          await MultipartFile.fromFile(file.path, filename: nameImage);
+      //ทำค่าMapให้เป็นFromDataก่อน
+      FormData data = FormData.fromMap(map);
+      await Dio()
+          .post(MyConstant().urlSaveFile, data: data)
+          .then((value) async {
+        urtPath = 'maproduct/$nameImage';
+        print('************ ${MyConstant().domain}$urtPath');
+
+        String urlAPI =
+            'https://www.androidthai.in.th/osp/addDataMa.php?isAdd=true&uidshop=$uid&name=$name&detail=$descrip&price=$price&urlproduct=$urtPath';
+        await Dio().get(urlAPI).then((value) => Navigator.pop(context));
+      }).catchError((value) {
+        print(value.toString());
+      });
+    } catch (e) {
+      print('Error ---------------> ${e.toString()}');
+    }
+  }
 }
