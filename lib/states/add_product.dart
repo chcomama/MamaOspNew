@@ -1,4 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:mamaosp/utility/dialog.dart';
 import 'package:mamaosp/utility/my_style.dart';
 
 class AddProduct extends StatefulWidget {
@@ -8,6 +12,9 @@ class AddProduct extends StatefulWidget {
 
 class _AddProductState extends State<AddProduct> {
   double screen;
+  File file;
+  String name, descrip, price;
+  bool statusProgress = false;
 
   Container buildName() {
     return Container(
@@ -16,7 +23,7 @@ class _AddProductState extends State<AddProduct> {
       margin: EdgeInsets.only(top: 16),
       width: screen * 0.6,
       child: TextField(
-        onChanged: (value) {},
+        onChanged: (value) => name = value.trim(),
         decoration: InputDecoration(
           hintStyle: TextStyle(color: MyStyle().darkColor),
           prefixIcon: Icon(
@@ -42,7 +49,7 @@ class _AddProductState extends State<AddProduct> {
       margin: EdgeInsets.only(top: 16),
       width: screen * 0.6,
       child: TextField(
-        onChanged: (value) {},
+        onChanged: (value) => descrip = value.trim(),
         decoration: InputDecoration(
           hintStyle: TextStyle(color: MyStyle().darkColor),
           prefixIcon: Icon(
@@ -68,7 +75,8 @@ class _AddProductState extends State<AddProduct> {
       margin: EdgeInsets.only(top: 16),
       width: screen * 0.6,
       child: TextField(
-        onChanged: (value) {},
+        keyboardType: TextInputType.number,
+        onChanged: (value) => price = value.trim(),
         decoration: InputDecoration(
           hintStyle: TextStyle(color: MyStyle().darkColor),
           prefixIcon: Icon(
@@ -95,16 +103,28 @@ class _AddProductState extends State<AddProduct> {
         backgroundColor: MyStyle().primaryColor,
         title: Text('Add Product'),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            buildRowImage(),
-            buildName(),
-            buildDescription(),
-            buildPrice(),
-            buildSaveProduct(),
-          ],
-        ),
+      body: Stack(
+        children: [
+          statusProgress ? MyStyle().showProgress() : SizedBox(),
+          buildSingleChildScrollView(),
+        ],
+      ),
+    );
+  }
+
+  SingleChildScrollView buildSingleChildScrollView() {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          SizedBox(
+            height: 30,
+          ),
+          buildRowImage(),
+          buildName(),
+          buildDescription(),
+          buildPrice(),
+          buildSaveProduct(),
+        ],
       ),
     );
   }
@@ -120,10 +140,83 @@ class _AddProductState extends State<AddProduct> {
             borderRadius: BorderRadius.circular(10),
           ),
         ),
-        onPressed: () {},
+        onPressed: () {
+          //Check Blank
+          if (file == null) {
+            normalDialog(
+                context, 'Please Choose Image ? by Click Camera Or Gallery');
+          } else if ((name?.isEmpty ?? true) ||
+              (descrip?.isEmpty ?? true) ||
+              (price?.isEmpty ?? true)) {
+            normalDialog(context, 'Have Space ? Please Fill Every Blank');
+          } else {
+            confirmSave();
+          }
+        },
         child: Text('Save Product'),
       ),
     );
+  }
+
+//alertแบบโชว์Detail
+  Future<Null> confirmSave() async {
+    showDialog(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: ListTile(
+          leading: Image.file(file),
+          title: Text(name),
+          subtitle: Text(descrip),
+        ),
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Price : $price BTH',
+                style: TextStyle(color: Colors.pink, fontSize: 25),
+              ),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              TextButton(
+                onPressed: () {
+                  //methodsave
+                  uploadImageAndInsertData();
+                  //refrehก่อน 
+                  setState(() {
+                    statusProgress = true;
+                  });
+                  Navigator.pop(context);
+                },
+                child: Text('Save Product'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(
+                  'Cacel',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
+            ],
+          )
+          //ต่อข้อมูลได้เรื่อยๆ
+        ],
+      ),
+    );
+  }
+
+  Future<Null> chooseSourceImage(ImageSource source) async {
+    try {
+      //getpictureandresize
+      var result = await ImagePicker()
+          .getImage(source: source, maxWidth: 800, maxHeight: 800);
+      setState(() {
+        file = File(result.path);
+      });
+    } catch (e) {}
   }
 
   Row buildRowImage() {
@@ -132,17 +225,20 @@ class _AddProductState extends State<AddProduct> {
       children: [
         IconButton(
           icon: Icon(Icons.add_a_photo),
-          onPressed: () {},
+          onPressed: () => chooseSourceImage(ImageSource.camera),
         ),
         Container(
           width: screen * 0.6,
-          child: Image.asset('images/image.png'),
+          child:
+              file == null ? Image.asset('images/image.png') : Image.file(file),
         ),
         IconButton(
           icon: Icon(Icons.add_photo_alternate),
-          onPressed: () {},
+          onPressed: () => chooseSourceImage(ImageSource.gallery),
         ),
       ],
     );
   }
+
+  void uploadImageAndInsertData() {}
 }
